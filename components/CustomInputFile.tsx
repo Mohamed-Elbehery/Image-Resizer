@@ -60,6 +60,7 @@ export default function CustomInputFile({
   const [isUploadOverlayHidden, setIsUploadOverlayHidden] = useState(true);
   const [img, setImg] = useState<String[] | File[] | Blob[] | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   // 6.2cm = 234.331 px
   // 5cm = 188.97637795 px
@@ -94,22 +95,31 @@ export default function CustomInputFile({
           </Label>
         )}
         {img && img.length > 0 && (
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger className="mx-auto mb-4">
-                <Trash
-                  onClick={() => {
-                    setImg(null);
-                  }}
-                  className="text-desc cursor-pointer"
-                  size={40}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Delete Images</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex items-center mx-auto gap-x-4 mb-4">
+            <Input
+              type="text"
+              onChange={(e) => setOrderId(e.target.value)}
+              value={orderId ?? ""}
+              className="w-80"
+            />
+
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Trash
+                    onClick={() => {
+                      setImg(null);
+                    }}
+                    className="text-desc cursor-pointer"
+                    size={40}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete Images</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         )}
         {/* <div className="grid grid-cols-3 gap-8">
           {img &&
@@ -254,14 +264,20 @@ export default function CustomInputFile({
 
       {img && img.length > 0 && (
         <PDFViewer style={{ width: "100%", height: "125vh" }}>
-          <MyDocument images={img} />
+          <MyDocument images={img} orderId={orderId ?? ""} />
         </PDFViewer>
       )}
     </div>
   );
 }
 
-const MyDocument = ({ images }: { images: String[] | File[] | Blob[] }) => {
+const MyDocument = ({
+  images,
+  orderId,
+}: {
+  images: String[] | File[] | Blob[];
+  orderId: string;
+}) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -276,7 +292,7 @@ const MyDocument = ({ images }: { images: String[] | File[] | Blob[] }) => {
             margin: "0 auto",
           }}
         >
-          Order Id: 9999
+          Order Id: {orderId}
         </Text>
       </Page>
     </Document>

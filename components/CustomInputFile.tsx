@@ -60,7 +60,28 @@ export default function CustomInputFile({
   const [isUploadOverlayHidden, setIsUploadOverlayHidden] = useState(true);
   const [img, setImg] = useState<String[] | File[] | Blob[] | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string[]>([]);
+
+  function splitImagesIntoGroups(
+    imagesArray: String[] | File[] | Blob[],
+    groupSize: number
+  ) {
+    const resultArray = [];
+    const numGroups = imagesArray?.length / groupSize;
+
+    for (let i = 0; i < numGroups; i++) {
+      const startIndex = i * groupSize;
+      const group = imagesArray?.slice(startIndex, startIndex + groupSize);
+      resultArray.push(group);
+    }
+
+    return resultArray;
+  }
+
+  const images = splitImagesIntoGroups(img!, 6);
+
+  console.log(orderId);
+  
 
   // 6.2cm = 234.331 px
   // 5cm = 188.97637795 px
@@ -96,13 +117,6 @@ export default function CustomInputFile({
         )}
         {img && img.length > 0 && (
           <div className="flex items-center mx-auto gap-x-4 mb-4">
-            <Input
-              type="text"
-              onChange={(e) => setOrderId(e.target.value)}
-              value={orderId ?? ""}
-              className="w-80"
-            />
-
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger>
@@ -263,9 +277,27 @@ export default function CustomInputFile({
       )}
 
       {img && img.length > 0 && (
-        <PDFViewer style={{ width: "100%", height: "125vh" }}>
-          <MyDocument images={img} orderId={orderId ?? ""} />
-        </PDFViewer>
+        <div className="flex gap-x-4">
+          <div className="space-y-5">
+            {images.map((_, idx) => (
+              <Input
+                key={idx}
+                className="w-40"
+                value={orderId![idx]}
+                onChange={(e) =>
+                  setOrderId(() => {
+                    const newOrderId = [...orderId!];
+                    newOrderId[idx] = e.target.value;
+                    return newOrderId;
+                  })
+                }
+              />
+            ))}
+          </div>
+          <PDFViewer style={{ width: "100%", height: "125vh" }}>
+            <MyDocument images={images} orderId={orderId ?? []} />
+          </PDFViewer>
+        </div>
       )}
     </div>
   );
@@ -275,26 +307,28 @@ const MyDocument = ({
   images,
   orderId,
 }: {
-  images: String[] | File[] | Blob[];
-  orderId: string;
+  images: (String[] | Blob[])[];
+  orderId: string[] | null;
 }) => {
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.conatiner}>
-          {images?.map((i, idx) => (
-            // eslint-disable-next-line jsx-a11y/alt-text
-            <Image key={idx} src={i as any} style={styles.image} />
-          ))}
-        </View>
-        <Text
-          style={{
-            margin: "0 auto",
-          }}
-        >
-          Order Id: {orderId}
-        </Text>
-      </Page>
+      {images.map((group, idx) => (
+        <Page key={idx} size="A4" style={styles.page}>
+          <Text
+            style={{
+              margin: "0 auto",
+            }}
+          >
+            Order Id: {orderId!?.length > 0 && orderId![idx]}
+          </Text>
+          <View style={styles.conatiner}>
+            {group?.map((i, idx: number) => (
+              // eslint-disable-next-line jsx-a11y/alt-text
+              <Image key={idx} src={i as any} style={styles.image} />
+            ))}
+          </View>
+        </Page>
+      ))}
     </Document>
   );
 };

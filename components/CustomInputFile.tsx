@@ -80,9 +80,6 @@ export default function CustomInputFile({
 
   const images = splitImagesIntoGroups(img!, 6);
 
-  console.log(orderId);
-  
-
   // 6.2cm = 234.331 px
   // 5cm = 188.97637795 px
 
@@ -90,8 +87,8 @@ export default function CustomInputFile({
     new Promise((resolve) => {
       Resizer.imageFileResizer(
         file,
-        234.331,
-        234.331,
+        10000,
+        10000,
         "JPEG",
         100,
         0,
@@ -277,7 +274,7 @@ export default function CustomInputFile({
       )}
 
       {img && img.length > 0 && (
-        <div className="flex gap-x-4">
+        <div className="flex gap-x-5">
           <div className="space-y-5">
             {images.map((_, idx) => (
               <Input
@@ -291,6 +288,8 @@ export default function CustomInputFile({
                     return newOrderId;
                   })
                 }
+
+                placeholder={`Enter Page ${idx + 1} ID`}
               />
             ))}
           </div>

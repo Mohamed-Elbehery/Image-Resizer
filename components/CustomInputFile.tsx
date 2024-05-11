@@ -87,8 +87,8 @@ export default function CustomInputFile({
     new Promise((resolve) => {
       Resizer.imageFileResizer(
         file,
-        10000,
-        10000,
+        100000,
+        100000,
         "JPEG",
         100,
         0,
@@ -116,12 +116,12 @@ export default function CustomInputFile({
           <div className="flex items-center mx-auto gap-x-4 mb-4">
             <TooltipProvider delayDuration={0}>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger className="cursor-pointer">
                   <Trash
                     onClick={() => {
                       setImg(null);
                     }}
-                    className="text-desc cursor-pointer"
+                    className="text-desc"
                     size={40}
                   />
                 </TooltipTrigger>

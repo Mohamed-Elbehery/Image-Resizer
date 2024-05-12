@@ -12,13 +12,14 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginTop: 200,
+    justifyContent: "center",
+    marginTop: 50,
+    gap: 70,
+    rowGap: 70,
   },
   image: {
     width: "6.2cm",
     height: "6.2cm",
-    marginBottom: 20,
   },
 });
 

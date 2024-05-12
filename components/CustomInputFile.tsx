@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Trash, Upload, X } from "lucide-react";
+import { MoveDown, Trash, Upload, X } from "lucide-react";
 import NextImage from "next/image";
 import { useState } from "react";
 import {
@@ -17,6 +17,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import { MyDocument } from "./MyDocument";
 import { resizeFile } from "@/utils/resizeFile";
 import { splitImagesIntoGroups } from "@/utils/splitImagesIntoGroups";
+import Loading from "./Loading/Loading";
 
 export default function CustomInputFile({
   label,
@@ -34,46 +35,30 @@ export default function CustomInputFile({
   const [isDragging, setIsDragging] = useState(false);
   const [orderId, setOrderId] = useState<string[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const images = splitImagesIntoGroups(img!, 6);
 
-  // 6.2cm = 234.331 px
-  // 5cm = 188.97637795 px
+  //* (6.2cm = 234.331 px) || (5cm = 188.97637795 px)
+
+  if (isLoading) return <Loading />;
 
   return (
     <div className={cn("mt-6 w-full", className)}>
-      {label && <Label className={cn(labelClassName)}>{label}</Label>}
-      <div className="flex items-start flex-col gap-3 mt-2">
-        {!img && (
+      {!img && (
+        <div className="flex items-center flex-col gap-y-5">
+          <h1 className="text-white text-xl flex items-center gap-x-2">
+            Click down here <MoveDown />
+          </h1>
           <Label
             onClick={() => setIsUploadOverlayHidden(false)}
-            className="border border-gray-400 p-10 rounded-md flex items-center justify-center w-fit select-none gap-x-3 mx-auto text-xl cursor-pointer"
+            className="border-2 border-white text-white p-10 rounded-md flex items-center justify-center w-fit select-none gap-x-3 mx-auto text-xl cursor-pointer"
           >
-            <Upload className="text-desc" size={36} />
+            <Upload className="text-desc text-white" size={36} />
             Upload
           </Label>
-        )}
-
-        {img && img.length > 0 && (
-          <div className="flex items-center mx-auto gap-x-4 mb-4">
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger className="cursor-pointer">
-                  <Trash
-                    onClick={() => {
-                      setImg(null);
-                    }}
-                    className="text-desc"
-                    size={40}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Delete Images</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {!isUploadOverlayHidden && (
         <>
@@ -89,11 +74,11 @@ export default function CustomInputFile({
               e.preventDefault();
               setIsDragging(true);
             }}
-            className="fixed top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-white w-2/5 h-1/2 z-50 rounded-md"
+            className="fixed top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-[#555] w-2/5 h-1/2 z-50 rounded-md"
           >
             <X
               onClick={() => setIsUploadOverlayHidden(true)}
-              className="absolute top-2 right-2 text-desc cursor-pointer"
+              className="absolute top-2 right-2 text-desc cursor-pointer text-white"
               size={18}
             />
             <div className="flex flex-col items-center justify-center gap-y-[10px] h-full">
@@ -131,10 +116,10 @@ export default function CustomInputFile({
                 </div>
               ) : (
                 <>
-                  <h1 className="text-center text-4xl max-w-[200px] leading-10">
+                  <h1 className="text-center text-4xl max-w-[200px] leading-10 text-white">
                     drag & drop any files
                   </h1>
-                  <span className="text-desc">or</span>
+                  <span className="text-desc text-white">or</span>
                   <Label
                     htmlFor="organization-logo"
                     className="text-xl text-white bg-blue-600 py-3 px-6 rounded-md cursor-pointer hover:bg-blue-700"
@@ -147,6 +132,7 @@ export default function CustomInputFile({
                     type="file"
                     accept="image/*"
                     onChange={async (e) => {
+                      setIsLoading(true);
                       const resizedImagesPromises = Array.from(
                         e.target.files!
                       ).map(async (img) => {
@@ -159,6 +145,7 @@ export default function CustomInputFile({
 
                       setImg(resizedImages as any);
                       setIsUploadOverlayHidden(true);
+                      setIsLoading(false);
                     }}
                     multiple
                   />
@@ -166,6 +153,7 @@ export default function CustomInputFile({
               )}
             </div>
           </div>
+
           {isDragging && (
             <div
               onDragOver={(e) => {
@@ -178,6 +166,7 @@ export default function CustomInputFile({
               onDrop={async (e) => {
                 e.preventDefault();
 
+                setIsLoading(true);
                 const resizedImagesPromises = Array.from(
                   e.dataTransfer.files!
                 ).map(async (img) => {
@@ -189,11 +178,12 @@ export default function CustomInputFile({
                 setImg(resizedImages as any);
                 setIsUploadOverlayHidden(true);
                 setIsDragging(false);
+                setIsLoading(false);
               }}
-              className="fixed top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-white w-2/5 h-1/2 z-50 rounded-md p-6"
+              className="fixed top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-[#555] w-2/5 h-1/2 z-50 rounded-md p-6"
             >
-              <div className="bg-gray-200 border-2 border-blue-600 border-dashed rounded-3xl h-full flex items-center justify-center">
-                <h1 className="text-main text-center text-4xl">
+              <div className="bg-[#666] border-2 border-blue-600 border-dashed rounded-3xl h-full flex items-center justify-center">
+                <h1 className="text-main text-center text-4xl text-white">
                   Drop a file here
                 </h1>
               </div>
@@ -221,9 +211,27 @@ export default function CustomInputFile({
               />
             ))}
           </div>
-          <PDFViewer style={{ width: "100%", height: "125vh" }}>
-            <MyDocument images={images} orderId={orderId ?? []} />
-          </PDFViewer>
+          <div className="relative w-full">
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger className="cursor-pointer absolute left-1/2 -translate-x-1/2 -top-16">
+                  <Trash
+                    onClick={() => {
+                      setImg(null);
+                    }}
+                    className="text-desc text-white"
+                    size={40}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete Images</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <PDFViewer style={{ width: "100%", height: "125vh" }}>
+              <MyDocument images={images} orderId={orderId ?? []} />
+            </PDFViewer>
+          </div>
         </div>
       )}
     </div>

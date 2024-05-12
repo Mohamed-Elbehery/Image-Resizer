@@ -13,38 +13,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import Resizer from "react-image-file-resizer";
-import {
-  Document,
-  PDFViewer,
-  StyleSheet,
-  Page,
-  View,
-  Image,
-  Text,
-} from "@react-pdf/renderer";
-
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
-    padding: 20,
-  },
-  conatiner: {
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginTop: 200,
-  },
-  image: {
-    width: "6.2cm",
-    height: "6.2cm",
-    marginBottom: 20,
-  },
-});
+import { PDFViewer } from "@react-pdf/renderer";
+import { MyDocument } from "./MyDocument";
+import { resizeFile } from "@/utils/resizeFile";
+import { splitImagesIntoGroups } from "@/utils/splitImagesIntoGroups";
 
 export default function CustomInputFile({
   label,
@@ -62,42 +34,10 @@ export default function CustomInputFile({
   const [isDragging, setIsDragging] = useState(false);
   const [orderId, setOrderId] = useState<string[]>([]);
 
-  function splitImagesIntoGroups(
-    imagesArray: String[] | File[] | Blob[],
-    groupSize: number
-  ) {
-    const resultArray = [];
-    const numGroups = imagesArray?.length / groupSize;
-
-    for (let i = 0; i < numGroups; i++) {
-      const startIndex = i * groupSize;
-      const group = imagesArray?.slice(startIndex, startIndex + groupSize);
-      resultArray.push(group);
-    }
-
-    return resultArray;
-  }
-
   const images = splitImagesIntoGroups(img!, 6);
 
   // 6.2cm = 234.331 px
   // 5cm = 188.97637795 px
-
-  const resizeFile = (file: File) =>
-    new Promise((resolve) => {
-      Resizer.imageFileResizer(
-        file,
-        100000,
-        100000,
-        "JPEG",
-        100,
-        0,
-        (uri) => {
-          resolve(uri);
-        },
-        "base64"
-      );
-    });
 
   return (
     <div className={cn("mt-6 w-full", className)}>
@@ -112,6 +52,7 @@ export default function CustomInputFile({
             Upload
           </Label>
         )}
+
         {img && img.length > 0 && (
           <div className="flex items-center mx-auto gap-x-4 mb-4">
             <TooltipProvider delayDuration={0}>
@@ -132,20 +73,8 @@ export default function CustomInputFile({
             </TooltipProvider>
           </div>
         )}
-        {/* <div className="grid grid-cols-3 gap-8">
-          {img &&
-            img?.map((i, idx) => (
-              <NextImage
-                key={idx}
-                src={i as any}
-                width={234.331}
-                height={234.331}
-                alt="uploaded image"
-                className="rounded-md w-[234.331px] h-[234.331px]"
-              />
-            ))}
-        </div> */}
       </div>
+
       {!isUploadOverlayHidden && (
         <>
           <div
@@ -288,7 +217,6 @@ export default function CustomInputFile({
                     return newOrderId;
                   })
                 }
-
                 placeholder={`Enter Page ${idx + 1} ID`}
               />
             ))}
@@ -301,33 +229,3 @@ export default function CustomInputFile({
     </div>
   );
 }
-
-const MyDocument = ({
-  images,
-  orderId,
-}: {
-  images: (String[] | Blob[])[];
-  orderId: string[] | null;
-}) => {
-  return (
-    <Document>
-      {images.map((group, idx) => (
-        <Page key={idx} size="A4" style={styles.page}>
-          <Text
-            style={{
-              margin: "0 auto",
-            }}
-          >
-            Order Id: {orderId!?.length > 0 && orderId![idx]}
-          </Text>
-          <View style={styles.conatiner}>
-            {group?.map((i, idx: number) => (
-              // eslint-disable-next-line jsx-a11y/alt-text
-              <Image key={idx} src={i as any} style={styles.image} />
-            ))}
-          </View>
-        </Page>
-      ))}
-    </Document>
-  );
-};
